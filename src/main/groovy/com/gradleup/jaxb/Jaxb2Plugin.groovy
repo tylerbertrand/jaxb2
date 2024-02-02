@@ -8,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.Copy
 import org.gradle.internal.reflect.Instantiator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -75,16 +76,22 @@ class Jaxb2Plugin implements Plugin<Project> {
     // make 'compileJava' require the new task, so that all sources are available
     project.tasks.clean.dependsOn project.tasks.cleanJaxb2SourcesDir
 
-
     project.afterEvaluate {
       Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
       for (XjcTaskConfig theConfig : xjcConfigs) {
-        def newConfig = theConfig
-        def t = project.tasks.register("generateJaxb2Classes-$newConfig.name", GenerateJaxb2Classes) {
-          it.theConfig = newConfig
+        def generationTaskConfig = theConfig
+        def packagePath = generationTaskConfig.basePackage.replace(".", "/")
+        def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
+          it.theConfig = generationTaskConfig
+          it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
           dependsOn project.tasks.initJaxb2SourcesDir
         }
-        project.tasks.compileJava.dependsOn t
+        def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
+          from project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}/$packagePath")
+          into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
+          dependsOn generationTask
+        }
+        project.tasks.compileJava.dependsOn processGeneratedClassesTask
       }
     }
   }

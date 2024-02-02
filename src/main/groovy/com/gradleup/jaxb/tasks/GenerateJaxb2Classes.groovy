@@ -3,8 +3,10 @@ package com.gradleup.jaxb.tasks
 
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 import static org.gradle.api.logging.Logging.getLogger
@@ -25,6 +27,9 @@ class GenerateJaxb2Classes extends DefaultTask {
   @Input
   XjcTaskConfig theConfig
 
+  @OutputDirectory
+  final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
+
   GenerateJaxb2Classes() {
     this.group = Jaxb2Plugin.TASK_GROUP
   }
@@ -37,13 +42,12 @@ class GenerateJaxb2Classes extends DefaultTask {
         classname: project.extensions.jaxb2.taskName,
         classpath: project.configurations.jaxb2.asPath)
 
-
     println("====GenerateJaxb2Classes====")
     println("singleConfig.name=${theConfig.name}")
     println("singleConfig.schema=${theConfig.schema}")
     println("============================")
 
-    def generatedSourcesDirParent = project.file(theConfig.generatedSourcesDir)
+    def generatedSourcesDirParent = generatedSourcesDirectory.get().asFile
     def basePackage = theConfig.basePackage
     def encoding = theConfig.encoding
 
