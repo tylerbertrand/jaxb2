@@ -71,12 +71,22 @@ class Jaxb2Plugin implements Plugin<Project> {
     // add new tasks for creating/cleaning the auto-value sources dir
     project.task(type: CleanJaxb2SourcesDir, "cleanJaxb2SourcesDir")
     project.task(type: InitJaxb2SourcesDir, "initJaxb2SourcesDir")
-    project.task(type: GenerateJaxb2Classes, "generateJaxb2Classes")
 
     // make 'compileJava' require the new task, so that all sources are available
     project.tasks.clean.dependsOn project.tasks.cleanJaxb2SourcesDir
-    project.tasks.generateJaxb2Classes.dependsOn project.tasks.initJaxb2SourcesDir
-    project.tasks.compileJava.dependsOn project.tasks.generateJaxb2Classes
+
+
+    project.afterEvaluate {
+      Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
+      for (XjcTaskConfig theConfig : xjcConfigs) {
+        def newConfig = theConfig
+        def t = project.tasks.register("generateJaxb2Classes-$newConfig.name", GenerateJaxb2Classes) {
+          singleConfig = newConfig
+          dependsOn project.tasks.initJaxb2SourcesDir
+        }
+        project.tasks.compileJava.dependsOn t
+      }
+    }
   }
 
   private addJaxbDependencies(Project project) {

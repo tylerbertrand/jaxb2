@@ -4,6 +4,7 @@ package com.gradleup.jaxb.tasks
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import static org.gradle.api.logging.Logging.getLogger
@@ -21,6 +22,9 @@ import static org.gradle.api.logging.Logging.getLogger
 class GenerateJaxb2Classes extends DefaultTask {
   private static final Logger LOG = getLogger(GenerateJaxb2Classes.class)
 
+  @Input
+  XjcTaskConfig singleConfig
+
   GenerateJaxb2Classes() {
     this.group = Jaxb2Plugin.TASK_GROUP
   }
@@ -33,9 +37,16 @@ class GenerateJaxb2Classes extends DefaultTask {
         classname: project.extensions.jaxb2.taskName,
         classpath: project.configurations.jaxb2.asPath)
 
+
+    println("====GenerateJaxb2Classes====")
+    println("singleConfig.name=${singleConfig.name}")
+    println("singleConfig.schema=${singleConfig.schema}")
+    println("============================")
+
     Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
 
     for (XjcTaskConfig theConfig : xjcConfigs) {
+
       def generatedSourcesDirParent = project.file(theConfig.generatedSourcesDir)
       def basePackage = theConfig.basePackage
       def encoding = theConfig.encoding
