@@ -81,7 +81,7 @@ class Jaxb2Plugin implements Plugin<Project> {
       for (XjcTaskConfig theConfig : xjcConfigs) {
         def newConfig = theConfig
         def t = project.tasks.register("generateJaxb2Classes-$newConfig.name", GenerateJaxb2Classes) {
-          singleConfig = newConfig
+          it.theConfig = newConfig
           dependsOn project.tasks.initJaxb2SourcesDir
         }
         project.tasks.compileJava.dependsOn t

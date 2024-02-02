@@ -23,7 +23,7 @@ class GenerateJaxb2Classes extends DefaultTask {
   private static final Logger LOG = getLogger(GenerateJaxb2Classes.class)
 
   @Input
-  XjcTaskConfig singleConfig
+  XjcTaskConfig theConfig
 
   GenerateJaxb2Classes() {
     this.group = Jaxb2Plugin.TASK_GROUP
@@ -39,56 +39,51 @@ class GenerateJaxb2Classes extends DefaultTask {
 
 
     println("====GenerateJaxb2Classes====")
-    println("singleConfig.name=${singleConfig.name}")
-    println("singleConfig.schema=${singleConfig.schema}")
+    println("singleConfig.name=${theConfig.name}")
+    println("singleConfig.schema=${theConfig.schema}")
     println("============================")
 
-    Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
+    def generatedSourcesDirParent = project.file(theConfig.generatedSourcesDir)
+    def basePackage = theConfig.basePackage
+    def encoding = theConfig.encoding
 
-    for (XjcTaskConfig theConfig : xjcConfigs) {
+    // Transform package to directory location to specify depends/produces when multiple schema output to same generatedSourcesDir
+    // Changing one schema will only cause recompilation/generation of that schema
+    def generatedSourcesDirPackage = new File(generatedSourcesDirParent,
+            basePackage.replace(".", "/"))
 
-      def generatedSourcesDirParent = project.file(theConfig.generatedSourcesDir)
-      def basePackage = theConfig.basePackage
-      def encoding = theConfig.encoding
+    def schemaFile = project.file(theConfig.schema)
+    def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
+    def bindingsDir = theConfig.bindingsDir
+    def includedBindingFiles = bindingFileIncludes(theConfig)
+    def extension = theConfig.extension
+    def additionalArgs = theConfig.additionalArgs
 
-      // Transform package to directory location to specify depends/produces when multiple schema output to same generatedSourcesDir
-      // Changing one schema will only cause recompilation/generation of that schema
-      def generatedSourcesDirPackage = new File(generatedSourcesDirParent,
-          basePackage.replace(".", "/"))
+    def arguments = [
+            destdir  : generatedSourcesDirParent,
+            package  : basePackage,
+            schema   : schemaFile,
+            encoding : encoding,
+            extension: extension,
+            header   : theConfig.header,
+    ]
 
-      def schemaFile = project.file(theConfig.schema)
-      def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
-      def bindingsDir = theConfig.bindingsDir
-      def includedBindingFiles = bindingFileIncludes(theConfig)
-      def extension = theConfig.extension
-      def additionalArgs = theConfig.additionalArgs
+    if (catalogFile) {
+      arguments.catalog = catalogFile
+    }
 
-      def arguments = [
-        destdir: generatedSourcesDirParent,
-        package: basePackage,
-        schema: schemaFile,
-        encoding: encoding,
-        extension: extension,
-        header: theConfig.header,
-      ]
+    // the depends and produces is compared using the time-stamp of the schema file and the destination package folder
+    ant.xjc(arguments) {
+      depends(file: schemaFile)
+      produces(dir: generatedSourcesDirPackage, includes: "**/*.java")
+      arg(line: additionalArgs)
 
       if (catalogFile) {
-        arguments.catalog = catalogFile
+        depends(file: catalogFile)
       }
 
-      // the depends and produces is compared using the time-stamp of the schema file and the destination package folder
-      ant.xjc(arguments) {
-        depends(file: schemaFile)
-        produces(dir: generatedSourcesDirPackage, includes: "**/*.java")
-        arg(line: additionalArgs)
-
-        if (catalogFile) {
-          depends(file: catalogFile)
-        }
-
-        if (bindingsDir?.trim()) {
-          binding(dir: project.file(bindingsDir), includes: includedBindingFiles)
-        }
+      if (bindingsDir?.trim()) {
+        binding(dir: project.file(bindingsDir), includes: includedBindingFiles)
       }
     }
   }
