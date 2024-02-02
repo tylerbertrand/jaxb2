@@ -4,9 +4,13 @@ package com.gradleup.jaxb.tasks
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 import static org.gradle.api.logging.Logging.getLogger
@@ -26,6 +30,10 @@ class GenerateJaxb2Classes extends DefaultTask {
 
   @Input
   XjcTaskConfig theConfig
+
+  @InputFile
+  @PathSensitive(PathSensitivity.RELATIVE)
+  final RegularFileProperty schemaFile = project.objects.fileProperty()
 
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
@@ -56,7 +64,7 @@ class GenerateJaxb2Classes extends DefaultTask {
     def generatedSourcesDirPackage = new File(generatedSourcesDirParent,
             basePackage.replace(".", "/"))
 
-    def schemaFile = project.file(theConfig.schema)
+    def schemaFile = schemaFile.get().asFile
     def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
     def bindingsDir = theConfig.bindingsDir
     def includedBindingFiles = bindingFileIncludes(theConfig)

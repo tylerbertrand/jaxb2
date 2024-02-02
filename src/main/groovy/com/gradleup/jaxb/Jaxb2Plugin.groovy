@@ -83,7 +83,10 @@ class Jaxb2Plugin implements Plugin<Project> {
         def packagePath = generationTaskConfig.basePackage.replace(".", "/")
         def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
           it.theConfig = generationTaskConfig
+          //--- new props ---
           it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
+          it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
+          //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }
         def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
