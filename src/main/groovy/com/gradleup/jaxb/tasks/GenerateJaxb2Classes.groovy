@@ -73,11 +73,9 @@ class GenerateJaxb2Classes extends DefaultTask {
     println("singleConfig.schema=${theConfig.schema}")
     println("============================")
 
-    def generatedSourcesDirParent = generatedSourcesDirectory.get().asFile
-
     // Transform package to directory location to specify depends/produces when multiple schema output to same generatedSourcesDir
     // Changing one schema will only cause recompilation/generation of that schema
-    def generatedSourcesDirPackage = new File(generatedSourcesDirParent,
+    def generatedSourcesDirPackage = new File(generatedSourcesDirectory.get().asFile,
             basePackage.get().replace(".", "/"))
 
     def schemaFile = schemaFile.get().asFile
@@ -85,7 +83,7 @@ class GenerateJaxb2Classes extends DefaultTask {
     def includedBindingFiles = bindingFileIncludes(theConfig)
 
     def arguments = [
-            destdir  : generatedSourcesDirParent,
+            destdir  : generatedSourcesDirectory.get().asFile,
             package  : basePackage.get(),
             schema   : schemaFile,
             encoding : encoding.get(),
