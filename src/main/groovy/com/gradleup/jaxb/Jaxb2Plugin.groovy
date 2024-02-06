@@ -86,6 +86,8 @@ class Jaxb2Plugin implements Plugin<Project> {
           //--- new props ---
           it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
           it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
+          it.basePackage.convention(generationTaskConfig.basePackage)
+          it.encoding.convention(generationTaskConfig.encoding)
           //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }

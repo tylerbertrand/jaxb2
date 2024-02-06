@@ -6,6 +6,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
@@ -35,6 +36,12 @@ class GenerateJaxb2Classes extends DefaultTask {
   @PathSensitive(PathSensitivity.RELATIVE)
   final RegularFileProperty schemaFile = project.objects.fileProperty()
 
+  @Input
+  final Property<String> basePackage = project.objects.property(String)
+
+  @Input
+  final Property<String> encoding = project.objects.property(String)
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -56,13 +63,11 @@ class GenerateJaxb2Classes extends DefaultTask {
     println("============================")
 
     def generatedSourcesDirParent = generatedSourcesDirectory.get().asFile
-    def basePackage = theConfig.basePackage
-    def encoding = theConfig.encoding
 
     // Transform package to directory location to specify depends/produces when multiple schema output to same generatedSourcesDir
     // Changing one schema will only cause recompilation/generation of that schema
     def generatedSourcesDirPackage = new File(generatedSourcesDirParent,
-            basePackage.replace(".", "/"))
+            basePackage.get().replace(".", "/"))
 
     def schemaFile = schemaFile.get().asFile
     def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
@@ -73,9 +78,9 @@ class GenerateJaxb2Classes extends DefaultTask {
 
     def arguments = [
             destdir  : generatedSourcesDirParent,
-            package  : basePackage,
+            package  : basePackage.get(),
             schema   : schemaFile,
-            encoding : encoding,
+            encoding : encoding.get(),
             extension: extension,
             header   : theConfig.header,
     ]
