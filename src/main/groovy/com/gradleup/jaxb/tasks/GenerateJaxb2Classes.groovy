@@ -1,6 +1,5 @@
 package com.gradleup.jaxb.tasks
 
-
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
@@ -9,6 +8,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -48,6 +48,11 @@ class GenerateJaxb2Classes extends DefaultTask {
   @Input
   final Property<String> additionalArgs = project.objects.property(String)
 
+  @InputFile
+  @Optional
+  @PathSensitive(PathSensitivity.RELATIVE)
+  final RegularFileProperty catalogFile = project.objects.fileProperty()
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -76,7 +81,6 @@ class GenerateJaxb2Classes extends DefaultTask {
             basePackage.get().replace(".", "/"))
 
     def schemaFile = schemaFile.get().asFile
-    def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
     def bindingsDir = theConfig.bindingsDir
     def includedBindingFiles = bindingFileIncludes(theConfig)
 
@@ -89,8 +93,8 @@ class GenerateJaxb2Classes extends DefaultTask {
             header   : theConfig.header,
     ]
 
-    if (catalogFile) {
-      arguments.catalog = catalogFile
+    if (catalogFile.isPresent()) {
+      arguments.catalog = catalogFile.get().asFile
     }
 
     // the depends and produces is compared using the time-stamp of the schema file and the destination package folder
@@ -99,8 +103,8 @@ class GenerateJaxb2Classes extends DefaultTask {
       produces(dir: generatedSourcesDirPackage, includes: "**/*.java")
       arg(line: additionalArgs.get())
 
-      if (catalogFile) {
-        depends(file: catalogFile)
+      if (catalogFile.isPresent()) {
+        depends(file: catalogFile.get().asFile)
       }
 
       if (bindingsDir?.trim()) {

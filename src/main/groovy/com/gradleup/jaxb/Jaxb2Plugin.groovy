@@ -90,6 +90,9 @@ class Jaxb2Plugin implements Plugin<Project> {
           it.encoding.convention(generationTaskConfig.encoding)
           it.extension.convention(generationTaskConfig.extension)
           it.additionalArgs.convention(generationTaskConfig.additionalArgs)
+          if (generationTaskConfig.catalog != null) {
+            it.catalogFile.convention(project.layout.projectDirectory.file(generationTaskConfig.catalog))
+          }
           //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }
