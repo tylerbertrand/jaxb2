@@ -42,6 +42,9 @@ class GenerateJaxb2Classes extends DefaultTask {
   @Input
   final Property<String> encoding = project.objects.property(String)
 
+  @Input
+  final Property<Boolean> extension = project.objects.property(Boolean)
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -73,7 +76,6 @@ class GenerateJaxb2Classes extends DefaultTask {
     def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
     def bindingsDir = theConfig.bindingsDir
     def includedBindingFiles = bindingFileIncludes(theConfig)
-    def extension = theConfig.extension
     def additionalArgs = theConfig.additionalArgs
 
     def arguments = [
@@ -81,7 +83,7 @@ class GenerateJaxb2Classes extends DefaultTask {
             package  : basePackage.get(),
             schema   : schemaFile,
             encoding : encoding.get(),
-            extension: extension,
+            extension: extension.get(),
             header   : theConfig.header,
     ]
 
