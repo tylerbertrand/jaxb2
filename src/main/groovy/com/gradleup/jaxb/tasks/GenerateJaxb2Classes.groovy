@@ -8,6 +8,7 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
@@ -60,6 +61,11 @@ class GenerateJaxb2Classes extends DefaultTask {
   @PathSensitive(PathSensitivity.RELATIVE)
   final ConfigurableFileCollection bindingFiles = project.objects.fileCollection()
 
+  @InputDirectory
+  @Optional
+  @PathSensitive(PathSensitivity.RELATIVE)
+  final DirectoryProperty bindingsDirectory = project.objects.directoryProperty()
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -85,7 +91,6 @@ class GenerateJaxb2Classes extends DefaultTask {
     def generatedSourcesDirPackage = new File(generatedSourcesDirectory.get().asFile,
             basePackage.get().replace(".", "/"))
 
-    def bindingsDir = theConfig.bindingsDir
     def includedBindingFiles = bindingFileIncludes(theConfig)
 
     def arguments = [
@@ -111,8 +116,8 @@ class GenerateJaxb2Classes extends DefaultTask {
         depends(file: catalogFile.get().asFile)
       }
 
-      if (bindingsDir?.trim()) {
-        binding(dir: project.file(bindingsDir), includes: includedBindingFiles)
+      if (bindingsDirectory.isPresent()) {
+        binding(dir: bindingsDirectory.get().asFile, includes: includedBindingFiles)
       }
     }
   }
