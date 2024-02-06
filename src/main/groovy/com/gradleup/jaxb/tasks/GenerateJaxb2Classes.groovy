@@ -2,12 +2,14 @@ package com.gradleup.jaxb.tasks
 
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -52,6 +54,11 @@ class GenerateJaxb2Classes extends DefaultTask {
   @Optional
   @PathSensitive(PathSensitivity.RELATIVE)
   final RegularFileProperty catalogFile = project.objects.fileProperty()
+
+  @InputFiles
+  @Optional
+  @PathSensitive(PathSensitivity.RELATIVE)
+  final ConfigurableFileCollection bindingFiles = project.objects.fileCollection()
 
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
