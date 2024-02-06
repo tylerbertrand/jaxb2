@@ -45,6 +45,9 @@ class GenerateJaxb2Classes extends DefaultTask {
   @Input
   final Property<Boolean> extension = project.objects.property(Boolean)
 
+  @Input
+  final Property<String> additionalArgs = project.objects.property(String)
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -76,7 +79,6 @@ class GenerateJaxb2Classes extends DefaultTask {
     def catalogFile = (theConfig.catalog != null) ? project.file(theConfig.catalog) : null
     def bindingsDir = theConfig.bindingsDir
     def includedBindingFiles = bindingFileIncludes(theConfig)
-    def additionalArgs = theConfig.additionalArgs
 
     def arguments = [
             destdir  : generatedSourcesDirParent,
@@ -95,7 +97,7 @@ class GenerateJaxb2Classes extends DefaultTask {
     ant.xjc(arguments) {
       depends(file: schemaFile)
       produces(dir: generatedSourcesDirPackage, includes: "**/*.java")
-      arg(line: additionalArgs)
+      arg(line: additionalArgs.get())
 
       if (catalogFile) {
         depends(file: catalogFile)

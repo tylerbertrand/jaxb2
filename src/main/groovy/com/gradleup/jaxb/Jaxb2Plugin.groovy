@@ -89,6 +89,7 @@ class Jaxb2Plugin implements Plugin<Project> {
           it.basePackage.convention(generationTaskConfig.basePackage)
           it.encoding.convention(generationTaskConfig.encoding)
           it.extension.convention(generationTaskConfig.extension)
+          it.additionalArgs.convention(generationTaskConfig.additionalArgs)
           //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }
