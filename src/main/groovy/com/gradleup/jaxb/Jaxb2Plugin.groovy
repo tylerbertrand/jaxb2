@@ -96,6 +96,7 @@ class Jaxb2Plugin implements Plugin<Project> {
           if (generationTaskConfig.bindingsDir != null) {
             it.bindingsDirectory.convention(project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir))
           }
+          it.header.convention(generationTaskConfig.header)
           //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }

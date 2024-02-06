@@ -66,6 +66,9 @@ class GenerateJaxb2Classes extends DefaultTask {
   @PathSensitive(PathSensitivity.RELATIVE)
   final DirectoryProperty bindingsDirectory = project.objects.directoryProperty()
 
+  @Input
+  final Property<Boolean> header = project.objects.property(Boolean)
+
   @OutputDirectory
   final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
 
@@ -99,7 +102,7 @@ class GenerateJaxb2Classes extends DefaultTask {
             schema   : schemaFile.get().asFile,
             encoding : encoding.get(),
             extension: extension.get(),
-            header   : theConfig.header,
+            header   : header.get(),
     ]
 
     if (catalogFile.isPresent()) {
