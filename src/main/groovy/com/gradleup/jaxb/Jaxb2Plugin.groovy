@@ -93,10 +93,16 @@ class Jaxb2Plugin implements Plugin<Project> {
           if (generationTaskConfig.catalog != null) {
             it.catalogFile.convention(project.layout.projectDirectory.file(generationTaskConfig.catalog))
           }
+          it.header.convention(generationTaskConfig.header)
+
           if (generationTaskConfig.bindingsDir != null) {
             it.bindingsDirectory.convention(project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir))
           }
-          it.header.convention(generationTaskConfig.header)
+          if(generationTaskConfig.includedBindingFiles != null) {
+            generationTaskConfig.includedBindingFiles.split(", ").each { f ->
+              it.bindingFiles.from(f)
+            }
+          }
           //-----------------
           dependsOn project.tasks.initJaxb2SourcesDir
         }

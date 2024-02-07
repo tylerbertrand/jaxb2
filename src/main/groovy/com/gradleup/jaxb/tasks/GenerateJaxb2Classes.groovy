@@ -119,6 +119,13 @@ class GenerateJaxb2Classes extends DefaultTask {
         depends(file: catalogFile.get().asFile)
       }
 
+      if (!bindingFiles.isEmpty()) {
+        bindingFiles.each {
+          println("binding ... ${it.path}")
+          binding(file:  it.path)
+        }
+      }
+
       if (bindingsDirectory.isPresent()) {
         binding(dir: bindingsDirectory.get().asFile, includes: includedBindingFiles)
       }
