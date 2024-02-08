@@ -3,7 +3,9 @@ package com.gradleup.jaxb.tasks
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
@@ -59,12 +61,7 @@ class GenerateJaxb2Classes extends DefaultTask {
   @InputFiles
   @Optional
   @PathSensitive(PathSensitivity.RELATIVE)
-  final ConfigurableFileCollection bindingFiles = project.objects.fileCollection()
-
-  @InputDirectory
-  @Optional
-  @PathSensitive(PathSensitivity.RELATIVE)
-  final DirectoryProperty bindingsDirectory = project.objects.directoryProperty()
+  ConfigurableFileTree bindingFiles
 
   @Input
   final Property<Boolean> header = project.objects.property(Boolean)
@@ -116,15 +113,9 @@ class GenerateJaxb2Classes extends DefaultTask {
       if (catalogFile.isPresent()) {
         depends(file: catalogFile.get().asFile)
       }
-
-      if (!bindingFiles.isEmpty()) {
-        bindingFiles.each {
-          println("binding ... ${it.path}")
-          binding(file:  it.path)
-        }
-      } else {
-        println("binding ... ${bindingsDirectory.get().asFile}/**/*.xjb")
-        binding(dir: bindingsDirectory.get().asFile, includes: '**/*.xjb')
+      bindingFiles.each {
+        println("binding ... ${it.path}")
+        binding(file:  it.path)
       }
     }
   }

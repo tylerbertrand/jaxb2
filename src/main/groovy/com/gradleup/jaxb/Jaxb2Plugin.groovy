@@ -96,14 +96,23 @@ class Jaxb2Plugin implements Plugin<Project> {
           }
           it.header.convention(generationTaskConfig.header)
 
-          it.bindingsDirectory.convention(generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory)
-
-          if(generationTaskConfig.includedBindingFiles != null) {
-            generationTaskConfig.includedBindingFiles.split(", ").each { f ->
-              it.bindingFiles.from(it.bindingsDirectory.getOrElse(project.layout.projectDirectory).file(f))
-            }
+//          it.bindingsDirectory.convention(generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory)
+          def bindingsFileTreeBaseDir = generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory
+          def bindingsFilesTree = project.fileTree(bindingsFileTreeBaseDir)
+          if (generationTaskConfig.includedBindingFiles != null && !generationTaskConfig.includedBindingFiles.trim().isEmpty()) {
+            println("--------Using custom includes")
+            generationTaskConfig.includedBindingFiles.trim().split(", ").each {  bindingsFilesTree.include(it) }
+          } else {
+            println("--------Using default includes")
+            bindingsFilesTree.include("**/*.xjb")
           }
-          //-----------------
+
+          println("--------bindingsFilesTree baseDir: ${bindingsFilesTree.dir.path}")
+          println("--------bindingsFilesTree.size: ${bindingsFilesTree.size()}")
+          bindingsFilesTree.each { println "--------file in tree: ${it.path}"}
+
+          it.bindingFiles = bindingsFilesTree
+
           dependsOn project.tasks.initJaxb2SourcesDir
         }
         def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
