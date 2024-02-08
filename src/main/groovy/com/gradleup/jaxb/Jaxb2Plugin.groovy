@@ -84,6 +84,7 @@ class Jaxb2Plugin implements Plugin<Project> {
         def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
           it.theConfig = generationTaskConfig
           //--- new props ---
+          println("Registering task ${generationTaskConfig.name} with outputDir ${project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}").get().asFile.path}")
           it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
           it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
           it.basePackage.convention(generationTaskConfig.basePackage)
@@ -95,12 +96,11 @@ class Jaxb2Plugin implements Plugin<Project> {
           }
           it.header.convention(generationTaskConfig.header)
 
-          if (generationTaskConfig.bindingsDir != null) {
-            it.bindingsDirectory.convention(project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir))
-          }
+          it.bindingsDirectory.convention(generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory)
+
           if(generationTaskConfig.includedBindingFiles != null) {
             generationTaskConfig.includedBindingFiles.split(", ").each { f ->
-              it.bindingFiles.from(f)
+              it.bindingFiles.from(it.bindingsDirectory.getOrElse(project.layout.projectDirectory).file(f))
             }
           }
           //-----------------

@@ -94,8 +94,6 @@ class GenerateJaxb2Classes extends DefaultTask {
     def generatedSourcesDirPackage = new File(generatedSourcesDirectory.get().asFile,
             basePackage.get().replace(".", "/"))
 
-    def includedBindingFiles = bindingFileIncludes(theConfig)
-
     def arguments = [
             destdir  : generatedSourcesDirectory.get().asFile,
             package  : basePackage.get(),
@@ -124,23 +122,10 @@ class GenerateJaxb2Classes extends DefaultTask {
           println("binding ... ${it.path}")
           binding(file:  it.path)
         }
-      }
-
-      if (bindingsDirectory.isPresent()) {
-        binding(dir: bindingsDirectory.get().asFile, includes: includedBindingFiles)
+      } else {
+        println("binding ... ${bindingsDirectory.get().asFile}/**/*.xjb")
+        binding(dir: bindingsDirectory.get().asFile, includes: '**/*.xjb')
       }
     }
-  }
-
-  private static String bindingFileIncludes(XjcTaskConfig config) {
-    def files = config.includedBindingFiles
-
-    if (!files?.trim()) {
-      LOG.info("No binding file includes defined, falling back to '**/*.xjb' pattern.")
-      files = '**/*.xjb'
-    }
-
-    LOG.info("Binding files: {}", files)
-    return files
   }
 }
