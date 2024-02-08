@@ -87,7 +87,6 @@ class Jaxb2Plugin implements Plugin<Project> {
   private static void registerGenerateJaxb2ClassesTask(Project project, XjcTaskConfig xjcConfig) {
     def generationTaskConfig = xjcConfig
     def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
-      it.theConfig = generationTaskConfig
 
       it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
       it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
@@ -101,7 +100,7 @@ class Jaxb2Plugin implements Plugin<Project> {
         it.catalogFile.convention(project.layout.projectDirectory.file(generationTaskConfig.catalog))
       }
 
-      it.bindingFiles.from(configureBindingsFiles(project, generationTaskConfig.bindingsDir, generationTaskConfig.includedBindingFiles))
+      it.bindingsFiles.from(collectBindingsFiles(project, generationTaskConfig.bindingsDir, generationTaskConfig.includedBindingFiles))
 
       dependsOn project.tasks.initJaxb2SourcesDir
     }
@@ -116,7 +115,7 @@ class Jaxb2Plugin implements Plugin<Project> {
     project.tasks.compileJava.dependsOn processGeneratedClassesTask
   }
 
-  private static Set<File> configureBindingsFiles(Project project, String bindingsDir, String includedBindingFiles) {
+  private static Set<File> collectBindingsFiles(Project project, String bindingsDir, String includedBindingFiles) {
     def bindingsFileTreeBaseDir = bindingsDir != null ? project.layout.projectDirectory.dir(bindingsDir) : project.layout.projectDirectory
     def bindingsFilesTree = project.fileTree(bindingsFileTreeBaseDir)
     if (includedBindingFiles != null && !includedBindingFiles.trim().isEmpty()) {

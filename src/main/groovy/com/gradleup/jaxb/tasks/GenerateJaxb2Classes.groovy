@@ -30,43 +30,40 @@ import static org.gradle.api.logging.Logging.getLogger
  * @since 1.0.0
  */
 @CacheableTask
-class GenerateJaxb2Classes extends DefaultTask {
+abstract class GenerateJaxb2Classes extends DefaultTask {
   private static final Logger LOG = getLogger(GenerateJaxb2Classes.class)
-
-  @Input
-  XjcTaskConfig theConfig
 
   @InputFile
   @PathSensitive(PathSensitivity.RELATIVE)
-  final RegularFileProperty schemaFile = project.objects.fileProperty()
+  abstract RegularFileProperty getSchemaFile()
 
   @Input
-  final Property<String> basePackage = project.objects.property(String)
+  abstract Property<String> getBasePackage()
 
   @Input
-  final Property<String> encoding = project.objects.property(String)
+  abstract Property<String> getEncoding()
 
   @Input
-  final Property<Boolean> extension = project.objects.property(Boolean)
+  abstract Property<Boolean> getExtension()
 
   @Input
-  final Property<String> additionalArgs = project.objects.property(String)
+  abstract Property<String> getAdditionalArgs()
 
   @InputFile
   @Optional
   @PathSensitive(PathSensitivity.RELATIVE)
-  final RegularFileProperty catalogFile = project.objects.fileProperty()
+  abstract RegularFileProperty getCatalogFile()
 
   @InputFiles
   @Optional
   @PathSensitive(PathSensitivity.RELATIVE)
-  final ConfigurableFileCollection bindingFiles = project.objects.fileCollection()
+  abstract ConfigurableFileCollection getBindingsFiles()
 
   @Input
-  final Property<Boolean> header = project.objects.property(Boolean)
+  abstract Property<Boolean> getHeader()
 
   @OutputDirectory
-  final DirectoryProperty generatedSourcesDirectory = project.objects.directoryProperty()
+  abstract DirectoryProperty getGeneratedSourcesDirectory()
 
   GenerateJaxb2Classes() {
     this.group = Jaxb2Plugin.TASK_GROUP
@@ -107,7 +104,7 @@ class GenerateJaxb2Classes extends DefaultTask {
       if (catalogFile.isPresent()) {
         depends(file: catalogFile.get().asFile)
       }
-      bindingFiles.each {
+      bindingsFiles.each {
         binding(file:  it.path)
       }
     }
