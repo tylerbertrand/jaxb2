@@ -8,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.Copy
 import org.gradle.internal.reflect.Instantiator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -71,12 +72,57 @@ class Jaxb2Plugin implements Plugin<Project> {
     // add new tasks for creating/cleaning the auto-value sources dir
     project.task(type: CleanJaxb2SourcesDir, "cleanJaxb2SourcesDir")
     project.task(type: InitJaxb2SourcesDir, "initJaxb2SourcesDir")
-    project.task(type: GenerateJaxb2Classes, "generateJaxb2Classes")
 
     // make 'compileJava' require the new task, so that all sources are available
     project.tasks.clean.dependsOn project.tasks.cleanJaxb2SourcesDir
-    project.tasks.generateJaxb2Classes.dependsOn project.tasks.initJaxb2SourcesDir
-    project.tasks.compileJava.dependsOn project.tasks.generateJaxb2Classes
+
+    project.afterEvaluate {
+      Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
+      for (XjcTaskConfig theConfig : xjcConfigs) {
+        def generationTaskConfig = theConfig
+        def packagePath = generationTaskConfig.basePackage.replace(".", "/")
+        def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
+          it.theConfig = generationTaskConfig
+          //--- new props ---
+          println("Registering task ${generationTaskConfig.name} with outputDir ${project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}").get().asFile.path}")
+          it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
+          it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
+          it.basePackage.convention(generationTaskConfig.basePackage)
+          it.encoding.convention(generationTaskConfig.encoding)
+          it.extension.convention(generationTaskConfig.extension)
+          it.additionalArgs.convention(generationTaskConfig.additionalArgs)
+          if (generationTaskConfig.catalog != null) {
+            it.catalogFile.convention(project.layout.projectDirectory.file(generationTaskConfig.catalog))
+          }
+          it.header.convention(generationTaskConfig.header)
+
+//          it.bindingsDirectory.convention(generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory)
+          def bindingsFileTreeBaseDir = generationTaskConfig.bindingsDir != null ? project.layout.projectDirectory.dir(generationTaskConfig.bindingsDir) : project.layout.projectDirectory
+          def bindingsFilesTree = project.fileTree(bindingsFileTreeBaseDir)
+          if (generationTaskConfig.includedBindingFiles != null && !generationTaskConfig.includedBindingFiles.trim().isEmpty()) {
+            println("--------Using custom includes")
+            generationTaskConfig.includedBindingFiles.trim().split(", ").each {  bindingsFilesTree.include(it) }
+          } else {
+            println("--------Using default includes")
+            bindingsFilesTree.include("**/*.xjb")
+          }
+
+          println("--------bindingsFilesTree baseDir: ${bindingsFilesTree.dir.path}")
+          println("--------bindingsFilesTree.size: ${bindingsFilesTree.size()}")
+          bindingsFilesTree.each { println "--------file in tree: ${it.path}"}
+
+          it.bindingFiles = bindingsFilesTree
+
+          dependsOn project.tasks.initJaxb2SourcesDir
+        }
+        def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
+          from project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}/$packagePath")
+          into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
+          dependsOn generationTask
+        }
+        project.tasks.compileJava.dependsOn processGeneratedClassesTask
+      }
+    }
   }
 
   private addJaxbDependencies(Project project) {
