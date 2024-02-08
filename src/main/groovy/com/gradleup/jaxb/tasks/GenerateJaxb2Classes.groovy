@@ -3,14 +3,12 @@ package com.gradleup.jaxb.tasks
 import com.gradleup.jaxb.Jaxb2Plugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.ConfigurableFileTree
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
@@ -31,6 +29,7 @@ import static org.gradle.api.logging.Logging.getLogger
  * @author holgerstolzenberg
  * @since 1.0.0
  */
+@CacheableTask
 class GenerateJaxb2Classes extends DefaultTask {
   private static final Logger LOG = getLogger(GenerateJaxb2Classes.class)
 
@@ -61,7 +60,7 @@ class GenerateJaxb2Classes extends DefaultTask {
   @InputFiles
   @Optional
   @PathSensitive(PathSensitivity.RELATIVE)
-  ConfigurableFileTree bindingFiles
+  final ConfigurableFileCollection bindingFiles = project.objects.fileCollection()
 
   @Input
   final Property<Boolean> header = project.objects.property(Boolean)
@@ -80,11 +79,6 @@ class GenerateJaxb2Classes extends DefaultTask {
         name: 'xjc',
         classname: project.extensions.jaxb2.taskName,
         classpath: project.configurations.jaxb2.asPath)
-
-    println("====GenerateJaxb2Classes====")
-    println("singleConfig.name=${theConfig.name}")
-    println("singleConfig.schema=${theConfig.schema}")
-    println("============================")
 
     // Transform package to directory location to specify depends/produces when multiple schema output to same generatedSourcesDir
     // Changing one schema will only cause recompilation/generation of that schema
@@ -114,7 +108,6 @@ class GenerateJaxb2Classes extends DefaultTask {
         depends(file: catalogFile.get().asFile)
       }
       bindingFiles.each {
-        println("binding ... ${it.path}")
         binding(file:  it.path)
       }
     }
