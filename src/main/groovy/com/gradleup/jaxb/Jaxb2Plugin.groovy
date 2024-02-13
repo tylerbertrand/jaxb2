@@ -112,7 +112,7 @@ class Jaxb2Plugin implements Plugin<Project> {
       dependsOn generationTask
     }
 
-    project.tasks.compileJava.dependsOn processGeneratedClassesTask
+    project.tasks.compileJava.dependsOn copyGeneratedClassesTask
   }
 
   private static Set<File> collectBindingsFiles(Project project, String bindingsDir, String includedBindingFiles) {
