@@ -107,7 +107,7 @@ class Jaxb2Plugin implements Plugin<Project> {
 
     def packagePath = generationTaskConfig.basePackage.replace(".", "/")
     def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
-      from project.layout.buildDirectory.dir("JAXB2_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath")
+      from project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath")
       into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
       dependsOn generationTask
     }
@@ -118,7 +118,7 @@ class Jaxb2Plugin implements Plugin<Project> {
   private static Set<File> collectBindingsFiles(Project project, String bindingsDir, String includedBindingFiles) {
     def bindingsFileTreeBaseDir = bindingsDir != null ? project.layout.projectDirectory.dir(bindingsDir) : project.layout.projectDirectory
     def bindingsFilesTree = project.fileTree(bindingsFileTreeBaseDir)
-    if (includedBindingFiles != null && !includedBindingFiles.trim().isEmpty()) {
+    if (includedBindingFiles != null) {
       includedBindingFiles.trim().split(", ").each {  bindingsFilesTree.include(it) }
     } else {
       bindingsFilesTree.include("**/*.xjb")
