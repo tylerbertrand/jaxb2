@@ -88,16 +88,16 @@ class Jaxb2Plugin implements Plugin<Project> {
     def generationTaskConfig = xjcConfig
     def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
 
-      it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}"))
-      it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
-      it.basePackage.convention(generationTaskConfig.basePackage)
-      it.encoding.convention(generationTaskConfig.encoding)
-      it.extension.convention(generationTaskConfig.extension)
-      it.additionalArgs.convention(generationTaskConfig.additionalArgs)
-      it.header.convention(generationTaskConfig.header)
+      it.generatedSourcesDirectory.set(project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}"))
+      it.schemaFile.set(project.layout.projectDirectory.file(generationTaskConfig.schema))
+      it.basePackage.set(generationTaskConfig.basePackage)
+      it.encoding.set(generationTaskConfig.encoding)
+      it.extension.set(generationTaskConfig.extension)
+      it.additionalArgs.set(generationTaskConfig.additionalArgs)
+      it.header.set(generationTaskConfig.header)
 
       if (generationTaskConfig.catalog != null) {
-        it.catalogFile.convention(project.layout.projectDirectory.file(generationTaskConfig.catalog))
+        it.catalogFile.set(project.layout.projectDirectory.file(generationTaskConfig.catalog))
       }
 
       it.bindingsFiles.from(collectBindingsFiles(project, generationTaskConfig.bindingsDir, generationTaskConfig.includedBindingFiles))
