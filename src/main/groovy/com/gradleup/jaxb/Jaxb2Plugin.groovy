@@ -28,6 +28,7 @@ class Jaxb2Plugin implements Plugin<Project> {
   private static final String JAXB2_VERSION = '0.9.5'
   private static final String JAXB_VERSION = '2.2.11'
   private static final String COMMONS_LOGGING_VERSION = '1.2'
+  private static final String JAXB_OUTPUT_DIR_BASE = "gradleup/jaxb2"
 
   @Override
   void apply(final Project project) {
@@ -88,7 +89,7 @@ class Jaxb2Plugin implements Plugin<Project> {
     def generationTaskConfig = xjcConfig
     def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
 
-      it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}"))
+      it.generatedSourcesDirectory.convention(project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}"))
       it.schemaFile.convention(project.layout.projectDirectory.file(generationTaskConfig.schema))
       it.basePackage.convention(generationTaskConfig.basePackage)
       it.encoding.convention(generationTaskConfig.encoding)
@@ -107,7 +108,7 @@ class Jaxb2Plugin implements Plugin<Project> {
 
     def packagePath = generationTaskConfig.basePackage.replace(".", "/")
     def processGeneratedClassesTask = project.tasks.register("processJaxb2Classes-$generationTaskConfig.name", Copy) {
-      from project.layout.buildDirectory.dir("gradleup/jaxb/${generationTaskConfig.name}/$packagePath")
+      from project.layout.buildDirectory.dir("JAXB2_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath")
       into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
       dependsOn generationTask
     }
