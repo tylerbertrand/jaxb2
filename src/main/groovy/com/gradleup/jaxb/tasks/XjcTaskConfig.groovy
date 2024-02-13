@@ -8,7 +8,7 @@ package com.gradleup.jaxb.tasks
  * @author holgerstolzenberg
  * @since 1.0.0
  */
-class XjcTaskConfig implements Serializable {
+class XjcTaskConfig {
   String name
   String generatedSourcesDir = 'src/generated/java'
   String basePackage
