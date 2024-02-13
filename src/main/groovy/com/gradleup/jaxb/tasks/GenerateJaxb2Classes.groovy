@@ -105,7 +105,7 @@ abstract class GenerateJaxb2Classes extends DefaultTask {
         depends(file: catalogFile.get().asFile)
       }
       bindingsFiles.each {
-        binding(file:  it.path)
+        binding(file: it.path)
       }
     }
   }
