@@ -74,7 +74,6 @@ class Jaxb2Plugin implements Plugin<Project> {
     project.task(type: CleanJaxb2SourcesDir, "cleanJaxb2SourcesDir")
     project.task(type: InitJaxb2SourcesDir, "initJaxb2SourcesDir")
 
-    // make 'compileJava' require the new task, so that all sources are available
     project.tasks.clean.dependsOn project.tasks.cleanJaxb2SourcesDir
 
     project.afterEvaluate {
