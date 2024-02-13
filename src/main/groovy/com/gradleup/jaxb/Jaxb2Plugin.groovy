@@ -86,7 +86,7 @@ class Jaxb2Plugin implements Plugin<Project> {
 
   private static void registerGenerateJaxb2ClassesTask(Project project, XjcTaskConfig xjcConfig) {
     def generationTaskConfig = xjcConfig
-    def generationTask = project.tasks.register("generateJaxb2Classes-$generationTaskConfig.name", GenerateJaxb2Classes) {
+    def generationTask = project.tasks.register("generateJaxb2Classes${generationTaskConfig.name.capitalize()}", GenerateJaxb2Classes) {
 
       it.generatedSourcesDirectory.set(project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}"))
       it.schemaFile.set(project.layout.projectDirectory.file(generationTaskConfig.schema))
@@ -106,7 +106,7 @@ class Jaxb2Plugin implements Plugin<Project> {
     }
 
     def packagePath = generationTaskConfig.basePackage.replace(".", "/")
-    def copyGeneratedClassesTask = project.tasks.register("copyJaxb2Classes-$generationTaskConfig.name", Copy) {
+    def copyGeneratedClassesTask = project.tasks.register("copyJaxb2Classes${generationTaskConfig.name.capitalize()}", Copy) {
       from project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath")
       into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
       dependsOn generationTask
