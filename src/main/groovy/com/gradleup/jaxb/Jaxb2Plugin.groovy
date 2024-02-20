@@ -76,12 +76,7 @@ class Jaxb2Plugin implements Plugin<Project> {
 
     project.tasks.clean.dependsOn project.tasks.cleanJaxb2SourcesDir
 
-    project.afterEvaluate {
-      Set<XjcTaskConfig> xjcConfigs = project.extensions.jaxb2.xjc
-      for (XjcTaskConfig xjcConfig : xjcConfigs) {
-        registerGenerateJaxb2ClassesTask(project, xjcConfig)
-      }
-    }
+    project.extensions.jaxb2.xjc.all { registerGenerateJaxb2ClassesTask(project, it) }
   }
 
   private static void registerGenerateJaxb2ClassesTask(Project project, XjcTaskConfig xjcConfig) {
@@ -105,10 +100,11 @@ class Jaxb2Plugin implements Plugin<Project> {
       dependsOn project.tasks.initJaxb2SourcesDir
     }
 
-    def packagePath = generationTaskConfig.basePackage.replace(".", "/")
     def copyGeneratedClassesTask = project.tasks.register("copyJaxb2Classes${generationTaskConfig.name.capitalize()}", Copy) {
-      from project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath")
-      into project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath")
+      def xjcProvider = project.provider { generationTaskConfig }
+      def packagePathProvider = xjcProvider.map { it.basePackage.replace(".", "/") }
+      from packagePathProvider.map { packagePath -> project.layout.buildDirectory.dir("$JAXB_OUTPUT_DIR_BASE/${generationTaskConfig.name}/$packagePath") }
+      into packagePathProvider.map { packagePath -> project.layout.projectDirectory.dir("${generationTaskConfig.generatedSourcesDir}/$packagePath") }
       dependsOn generationTask
     }
 
